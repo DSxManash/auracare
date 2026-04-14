@@ -1,5 +1,11 @@
 # 🌿 AuraCare - Smart Plant Care System
 
+## 🌐 Live Demo
+
+🚀 [Click here to open AuraCare](https://auracare-weld.vercel.app/)
+
+---
+
 ## 📌 Project Overview
 
 AuraCare is a full-stack web application that helps users manage plant care efficiently using weather-based logic.
