@@ -2,7 +2,7 @@
 
 ## 🌐 Live Demo
 
-🚀 [Click here to open AuraCare](https://auracare-weld.vercel.app/)
+🚀 <a href="https://auracare-weld.vercel.app/" target="_blank">Click here</a>
 
 ---
 
