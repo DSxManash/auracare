@@ -74,40 +74,62 @@ const Dashboard = () => {
             <div className="px-5 py-2 text-[10px] text-white/30 font-['JetBrains_Mono'] uppercase tracking-[0.15em]">
               Overview
             </div>
-            <a className="flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
+            <button onClick={() => navigate('/dashboard')} className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
               <span className="text-base w-5 text-center">◈</span> Dashboard
-            </a>
-            <a className="flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
+            </button>
+            <button className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
               <span className="text-base w-5 text-center">❧</span> All Plants
               <span className="ml-auto bg-[#C1440E] text-white text-[10px] px-2 py-0.5 rounded-full font-['JetBrains_Mono']">5</span>
-            </a>
-            <a className="flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
+            </button>
+            <button onClick={() => navigate('/dashboard/daily-tasks')} className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
               <span className="text-base w-5 text-center">✦</span> Daily Tasks
               <span className="ml-auto bg-[#C9821A] text-white text-[10px] px-2 py-0.5 rounded-full font-['JetBrains_Mono']">8</span>
-            </a>
+            </button>
+
+            <div className="px-5 py-2 mt-6 text-[10px] text-white/30 font-['JetBrains_Mono'] uppercase tracking-[0.15em]">
+              Monitoring
+            </div>
+            <button onClick={() => navigate('/dashboard/temperature')} className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
+              <span className="text-base w-5 text-center">🌡️</span> Temperature
+            </button>
+            <button onClick={() => navigate('/dashboard/humidity')} className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
+              <span className="text-base w-5 text-center">💧</span> Humidity
+            </button>
+            <button onClick={() => navigate('/dashboard/soil-moisture')} className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
+              <span className="text-base w-5 text-center">🌱</span> Soil Moisture
+            </button>
+            <button onClick={() => navigate('/dashboard/light-intensity')} className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
+              <span className="text-base w-5 text-center">☀️</span> Light Intensity
+            </button>
+            <button onClick={() => navigate('/dashboard/nutrients')} className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
+              <span className="text-base w-5 text-center">🥕</span> Nutrients
+            </button>
+            <button onClick={() => navigate('/dashboard/ph-level')} className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
+              <span className="text-base w-5 text-center">⚗️</span> pH Level
+            </button>
 
             <div className="px-5 py-2 mt-6 text-[10px] text-white/30 font-['JetBrains_Mono'] uppercase tracking-[0.15em]">
               Management
             </div>
-            <a className="flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
+            <button className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
               <span className="text-base w-5 text-center">◎</span> Staff
-            </a>
-            <a className="flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
+            </button>
+            <button className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
               <span className="text-base w-5 text-center">⊡</span> Rooms
-            </a>
-            <a className="flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
+            </button>
+            <button className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
               <span className="text-base w-5 text-center">◻</span> Audit Log
-            </a>
+            </button>
 
             <div className="px-5 py-2 mt-6 text-[10px] text-white/30 font-['JetBrains_Mono'] uppercase tracking-[0.15em]">
               Communication
             </div>
-            <a className="flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
+            <button className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
               <span className="text-base w-5 text-center">⋮⋮</span> Team Chat
-            </a>
-            <a className="flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
+            </button>
+            <button className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
               <span className="text-base w-5 text-center">◈</span> Reports
-            </a>
+            </button>
           </nav>
 
           <div className="mt-auto px-5 pt-4 border-t border-white/10">
