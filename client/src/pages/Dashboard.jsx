@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { logout, accessToken, user } = useAuth();
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      setUser(JSON.parse(userData));
-    } else {
+    // Redirect to auth if no token
+    if (!accessToken) {
       navigate('/auth');
+      return;
     }
 
     const timer = setInterval(() => {
@@ -19,7 +19,7 @@ const Dashboard = () => {
     }, 60000);
 
     return () => clearInterval(timer);
-  }, [navigate]);
+  }, [navigate, accessToken]);
 
   const formatTime = (date) => {
     const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -29,10 +29,9 @@ const Dashboard = () => {
     return `${days[date.getDay()]} ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()} · ${h}:${m}`;
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('auraCareToken');
-    localStorage.removeItem('user');
-    navigate('/');
+  const handleLogout = async () => {
+    await logout();
+    navigate('/auth');
   };
 
   return (
