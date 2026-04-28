@@ -5,14 +5,7 @@ import logger from '../utils/logger.js';
 
 // Security headers middleware
 export const securityHeaders = helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"],
-    },
-  },
+  contentSecurityPolicy: false, // Disable CSP to avoid blocking CORS requests
   hsts: {
     maxAge: 31536000,
     includeSubDomains: true,
@@ -64,13 +57,11 @@ export const apiRateLimit = rateLimit({
 
 // CORS error handler
 export const corsErrorHandler = (err, req, res, next) => {
-  if (err.name === 'CORSError') {
-    logger.warn('CORS error', {
-      error: err.message,
-      origin: req.headers.origin,
-      ip: req.ip
+  if (err && err.status === 403 && err.message.includes('CORS')) {
+    return res.status(403).json({
+      error: 'CORS policy violation',
+      message: err.message,
     });
-    return res.status(403).json({ error: 'CORS policy violation' });
   }
   next(err);
 };

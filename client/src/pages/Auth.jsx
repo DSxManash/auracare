@@ -3,18 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Eye, EyeOff } from 'lucide-react'; // or any icon set
 
-// Simple strength checker (replace with zxcvbn for real use)
-const getPasswordStrength = (password) => {
-  if (!password) return { score: 0, label: 'None', color: 'bg-gray-200' };
-  let score = 0;
-  if (password.length >= 8) score++;
-  if (/[A-Z]/.test(password)) score++;
-  if (/[0-9]/.test(password)) score++;
-  if (/[^A-Za-z0-9]/.test(password)) score++;
-  const labels = ['Weak', 'Fair', 'Good', 'Strong'];
-  const colors = ['bg-red-400', 'bg-orange-400', 'bg-yellow-400', 'bg-green-500'];
-  return { score, label: labels[score - 1] || 'Very Weak', color: colors[score - 1] || 'bg-red-400' };
-};
+const API_BASE_URL = import.meta.env.VITE_API_URL?.replace(/\/$/, '') || '';
+const buildApiUrl = (path) => `${API_BASE_URL}${path}`;
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -30,8 +20,6 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
-
-  const passwordStrength = isLogin ? null : getPasswordStrength(formData.password);
 
   // Persist email when switching modes
   useEffect(() => {
@@ -55,12 +43,33 @@ const Auth = () => {
       newErrors.password = 'Password is required';
     } else if (formData.password.length < 8) {
       newErrors.password = 'Minimum 8 characters';
-    } else if (!/[A-Z]/.test(formData.password) || !/\d/.test(formData.password)) {
-      newErrors.password = 'Password needs uppercase and a number';
+    } else if (!/[a-z]/.test(formData.password) || !/[A-Z]/.test(formData.password) || !/\d/.test(formData.password)) {
+      newErrors.password = 'Password needs uppercase, lowercase, and a number';
     }
 
     if (!isLogin && !formData.name.trim()) newErrors.name = 'Name is required';
     return newErrors;
+  };
+
+  const getFriendlyAuthError = (res, data) => {
+    if (data?.message) return data.message;
+    if (data?.error) return data.error;
+    if (data?.details?.[0]?.msg) return data.details[0].msg;
+
+    if (!res) return 'We could not reach the server. Please try again.';
+
+    switch (res.status) {
+      case 400:
+        return 'Please check your details and try again.';
+      case 401:
+        return 'Email or password is incorrect.';
+      case 403:
+        return 'Access is blocked for this request. Please check your browser origin or try again later.';
+      case 429:
+        return 'Too many attempts. Please wait a moment and try again.';
+      default:
+        return 'Something went wrong. Please try again.';
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -74,9 +83,9 @@ const Auth = () => {
     setLoading(true);
     setApiError('');
 
-    const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register';
+    const endpoint = buildApiUrl(isLogin ? '/api/auth/login' : '/api/auth/register');
     const body = { email: formData.email, password: formData.password };
-    if (!isLogin) body.name = formData.name; // if backend supports it
+    if (!isLogin) body.name = formData.name;
 
     try {
       const res = await fetch(endpoint, {
@@ -90,7 +99,7 @@ const Auth = () => {
       const data = contentType?.includes('application/json') ? await res.json() : {};
 
       if (!res.ok) {
-        const errorMessage = data?.message || data?.error || data?.details?.[0]?.msg || res.statusText || 'Something went wrong';
+        const errorMessage = getFriendlyAuthError(res, data);
         throw new Error(errorMessage);
       }
 
@@ -107,7 +116,11 @@ const Auth = () => {
         setFormData((prev) => ({ ...prev, password: '', name: '' }));
       }
     } catch (err) {
-      setApiError(err.message);
+      setApiError(
+        err?.message === 'Failed to fetch'
+          ? 'We could not reach the server. Please check your connection or try again later.'
+          : err.message
+      );
     } finally {
       setLoading(false);
     }
@@ -122,7 +135,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#F8F9F4] to-white flex items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-linear-to-br from-[#F8F9F4] to-white flex items-center justify-center px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">

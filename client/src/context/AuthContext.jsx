@@ -3,13 +3,25 @@ import React, { createContext, useContext, useState, useCallback } from 'react';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [accessToken, setAccessToken] = useState(null);
-  const [user, setUser] = useState(null);
+  const [accessToken, setAccessToken] = useState(() => sessionStorage.getItem('accessToken'));
+  const [user, setUser] = useState(() => {
+    try {
+      const storedUser = sessionStorage.getItem('user');
+      return storedUser ? JSON.parse(storedUser) : null;
+    } catch {
+      return null;
+    }
+  });
 
   const login = useCallback((token, userData = null) => {
     setAccessToken(token);
     setUser(userData);
-    // No localStorage! Token lives only in React state (lost on refresh)
+    sessionStorage.setItem('accessToken', token);
+    if (userData) {
+      sessionStorage.setItem('user', JSON.stringify(userData));
+    } else {
+      sessionStorage.removeItem('user');
+    }
   }, []);
 
   const logout = useCallback(async () => {
@@ -18,11 +30,13 @@ export const AuthProvider = ({ children }) => {
         method: 'POST',
         credentials: 'include',
       });
-    } catch (e) {
+    } catch {
       // Even if the request fails, we still log out on the frontend
     }
     setAccessToken(null);
     setUser(null);
+    sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('user');
     // Navigation will be handled by the component using this hook
   }, []);
 
@@ -49,4 +63,5 @@ export const AuthProvider = ({ children }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useAuth = () => useContext(AuthContext);

@@ -12,6 +12,19 @@ import { errorHandler, notFound } from './middleware/error.js';
 
 const app = express();
 
+// ===== CORS Configuration (SIMPLIFIED) =====
+const corsOptions = {
+  origin: true, // Allow all origins in development, or configure strictly in production
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+// Override for production - only allow specific origin
+if (config.nodeEnv === 'production') {
+  corsOptions.origin = config.clientUrl;
+}
+
 // Trust proxy for secure cookies (important for production behind reverse proxy)
 app.set('trust proxy', 1);
 
@@ -33,12 +46,7 @@ if (config.nodeEnv === 'production') {
 }
 
 // CORS configuration
-app.use(
-  cors({
-    origin: config.clientUrl,
-    credentials: true,
-  })
-);
+app.use(cors(corsOptions));
 
 // Body parsing middleware
 app.use(express.json({ limit: '10mb' }));

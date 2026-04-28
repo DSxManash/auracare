@@ -38,7 +38,7 @@ const hashRefreshToken = (token) =>
 
 // Register endpoint - creates a new user and issues tokens
 router.post('/register', validateRegistration, asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, name } = req.body;
 
   logger.info('Registration attempt', { email });
 
@@ -51,8 +51,8 @@ router.post('/register', validateRegistration, asyncHandler(async (req, res) => 
 
   const passwordHash = await bcrypt.hash(password, 12);
   const user = await prisma.user.create({
-    data: { email, passwordHash },
-    select: { id: true, email: true, createdAt: true }
+    data: { email, passwordHash, name: name?.trim() || null },
+    select: { id: true, email: true, name: true, createdAt: true }
   });
 
   const accessToken = generateAccessToken(user.id);
@@ -67,7 +67,7 @@ router.post('/register', validateRegistration, asyncHandler(async (req, res) => 
   logger.info('User registered successfully', { userId: user.id, email });
 
   res.cookie('refreshToken', refreshToken, refreshCookieOptions);
-  return res.json({ accessToken, user: { id: user.id, email: user.email } });
+  return res.json({ accessToken, user: { id: user.id, email: user.email, name: user.name } });
 }));
 
 // Login endpoint - authenticates user and issues tokens
@@ -100,7 +100,7 @@ router.post('/login', validateLogin, asyncHandler(async (req, res) => {
   logger.info('User logged in successfully', { userId: user.id, email });
 
   res.cookie('refreshToken', refreshToken, refreshCookieOptions);
-  return res.json({ accessToken, user: { id: user.id, email: user.email } });
+  return res.json({ accessToken, user: { id: user.id, email: user.email, name: user.name } });
 }));
 
 // Refresh endpoint - issues new access token if refresh token is valid
