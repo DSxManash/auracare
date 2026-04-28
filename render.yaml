@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: auracare-backend
+    env: node
+    region: ohio # You can change this to your preferred Render region
+    plan: free # Uses Render's free tier
+    rootDir: server # Points to the backend directory
+    buildCommand: "npm install && npx prisma generate"
+    startCommand: "npm start"
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: CLIENT_URL
+        value: https://auracare-coral.vercel.app # Your hosted frontend URL
+      - key: DATABASE_URL
+        sync: false # You must provide this in the Render dashboard
+      - key: ACCESS_TOKEN_SECRET
+        sync: false # You must provide this in the Render dashboard
+      - key: REFRESH_TOKEN_SECRET
+        sync: false # You must provide this in the Render dashboard
