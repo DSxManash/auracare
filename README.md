@@ -72,6 +72,27 @@ Instead of relying on fixed schedules, AuraCare leverages real-time sensor data 
     npm run dev
     ```
 
+## 🌐 Deployment
+
+AuraCare is configured for automated deployment across Vercel and Render.
+
+### Frontend (Vercel)
+The client is deployed to **Vercel** for optimal performance and edge caching.
+- **URL:** [https://auracare-coral.vercel.app](https://auracare-coral.vercel.app)
+- **Configuration:** Uses `client/vercel.json` to proxy API requests to the Render backend, preventing CORS issues and simplifying local development vs production logic.
+
+### Backend (Render)
+The server is deployed to **Render** using a Blueprint configuration (`render.yaml`).
+- **URL:** [https://auracare-backend-gp1w.onrender.com](https://auracare-backend-gp1w.onrender.com)
+- **CI/CD:** Automatically redeploys when changes are merged into the `main` branch.
+
+### Environment Variables Required
+To deploy your own instance, ensure the following variables are set on Render:
+- `DATABASE_URL`: PostgreSQL connection string.
+- `ACCESS_TOKEN_SECRET`: Long random string for JWT.
+- `REFRESH_TOKEN_SECRET`: Long random string for JWT.
+- `CLIENT_URL`: `https://auracare-coral.vercel.app` (for CORS).
+
 ## 📜 License
 
 This project is intended for academic and portfolio purposes.
