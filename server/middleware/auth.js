@@ -1,16 +1,19 @@
 import { verifyAccessToken } from '../utils/token.js';
+import logger from '../utils/logger.js';
 
 export const authenticate = (req, res, next) => {
   const authHeader = req.headers.authorization;
-  const token = authHeader && authHeader.split(' ')[1];
+  if (!authHeader?.startsWith('Bearer ')) {
+    return res.status(401).json({ message: 'Authentication required' });
+  }
 
-  if (!token) return res.status(401).json({ message: 'No access token' });
-
+  const token = authHeader.split(' ')[1];
   try {
-    const decoded = verifyAccessToken(token);
-    req.userId = decoded.userId;
+    const payload = verifyAccessToken(token);
+    req.userId = payload.userId;
     next();
   } catch (err) {
-    return res.status(403).json({ message: 'Invalid or expired access token' });
+    logger.warn('Invalid access token attempt', { error: err.message });
+    return res.status(401).json({ message: 'Invalid or expired token' });
   }
 };

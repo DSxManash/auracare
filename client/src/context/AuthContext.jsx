@@ -1,15 +1,15 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [accessToken, setAccessToken] = useState(null);
   const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const login = useCallback((token, userData = null) => {
     setAccessToken(token);
     setUser(userData);
-    // No localStorage! Token lives only in React state (lost on refresh)
   }, []);
 
   const logout = useCallback(async () => {
@@ -23,7 +23,6 @@ export const AuthProvider = ({ children }) => {
     }
     setAccessToken(null);
     setUser(null);
-    // Navigation will be handled by the component using this hook
   }, []);
 
   const refreshAccessToken = useCallback(async () => {
@@ -34,16 +33,35 @@ export const AuthProvider = ({ children }) => {
       });
       if (!res.ok) throw new Error('Refresh failed');
       const data = await res.json();
+      console.log('Auth Refresh Data:', data);
       setAccessToken(data.accessToken);
+      setUser(data.user);
       return data.accessToken;
     } catch {
       setAccessToken(null);
+      setUser(null);
       throw new Error('Session expired');
     }
   }, []);
 
+  // Initial session check
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        await refreshAccessToken();
+      } catch (err) {
+        // No session or expired, which is fine for initial load
+      } finally {
+        setLoading(false);
+      }
+    };
+    initAuth();
+  }, [refreshAccessToken]);
+
+  const isAuthenticated = !!accessToken;
+
   return (
-    <AuthContext.Provider value={{ accessToken, user, login, logout, refreshAccessToken }}>
+    <AuthContext.Provider value={{ accessToken, user, login, logout, refreshAccessToken, isAuthenticated, loading }}>
       {children}
     </AuthContext.Provider>
   );

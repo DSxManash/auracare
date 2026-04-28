@@ -1,468 +1,403 @@
-import React, { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { 
+  Thermometer, Droplets, Sprout, Sun, Menu, X, ArrowRight, 
+  Shield, Zap, CheckCircle, Globe, Leaf, Eye, EyeOff, Loader2, ArrowLeft 
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
+import ThemeToggle from '../components/ThemeToggle';
 
-const Landingpage = () => {
-  const [activeTab, setActiveTab] = useState('need-based')
-  const navigate = useNavigate()
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+
+const features = [
+  { icon: Thermometer, title: 'Temperature Control', desc: 'Real-time heat monitoring with zone-level alerts.', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+  { icon: Droplets, title: 'Humidity Tracking', desc: 'Precision vapor monitoring for optimal transpiration.', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+  { icon: Sun, title: 'Light Intensity', desc: 'PAR sensor integration for photosynthesis control.', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+  { icon: Sprout, title: 'Soil Intelligence', desc: 'Moisture and nutrient sensors keep roots at peak health.', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+  { icon: Shield, title: 'Secure & Reliable', desc: 'AES-256 encrypted data with 99.9% uptime SLA.', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+  { icon: Zap, title: 'Instant Alerts', desc: 'Notifications the moment readings leave safe range.', color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+];
+
+const stats = [
+  { value: '99.9%', label: 'Uptime' },
+  { value: '6+', label: 'Sensor Types' },
+  { value: '24/7', label: 'Monitoring' },
+  { value: '<5s', label: 'Alert Speed' },
+];
+
+// Internal Auth Popup Component
+const AuthPopup = ({ isOpen, onClose, initialView = 'login' }) => {
+  const [isLogin, setIsLogin] = useState(initialView === 'login');
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const { login, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    setIsLogin(initialView === 'login');
+  }, [initialView]);
+
+  useEffect(() => {
+    if (isAuthenticated && isOpen) {
+      onClose();
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate, isOpen, onClose]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const endpoint = isLogin ? '/auth/login' : '/auth/register';
+      const body = isLogin ? { email: form.email, password: form.password } : form;
+      const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || 'Something went wrong');
+      login(data.accessToken, data.user);
+      onClose();
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#F8F9F4]">
-      {/* Navigation */}
-      <nav className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-100 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <div className="flex items-center space-x-2">
-                
-                <span className="text-xl font-bold text-[#1B2022]">🌿 AuraCare</span>
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-slate-950/40 backdrop-blur-md"
+          />
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            className="w-full max-w-[440px] bg-white dark:bg-slate-900 rounded-[2.5rem] p-10 md:p-12 border border-slate-200/50 dark:border-white/5 shadow-2xl relative z-10 overflow-hidden"
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 bg-accent/10 blur-[60px] -mr-16 -mt-16 pointer-events-none" />
+            <button onClick={onClose} className="absolute top-8 right-8 p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors bg-slate-50 dark:bg-white/5 rounded-xl">
+              <X size={18} />
+            </button>
+            <div className="flex items-center gap-3 mb-10">
+              <div className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <Leaf size={18} className="text-white" />
               </div>
+              <span className="font-black text-slate-900 dark:text-white text-base tracking-tight uppercase">AuraCare</span>
             </div>
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-[#6C757D] hover:text-[#2D6A4F] transition-colors font-medium">Features</a>
-              <a href="#pwa" className="text-[#6C757D] hover:text-[#2D6A4F] transition-colors font-medium">PWA</a>
-              <a href="#contact" className="text-[#6C757D] hover:text-[#2D6A4F] transition-colors font-medium">Contact</a>
-              <div className="flex items-center space-x-3">
-                <button 
-                  onClick={() => navigate('/auth')}
-                  className="border border-[#2D6A4F] text-[#2D6A4F] px-4 py-2 rounded-lg hover:bg-[#2D6A4F] hover:text-white transition-colors font-medium"
-                >
-                  Login
-                </button>
-                <button 
-                  onClick={() => navigate('/auth')}
-                  className="bg-[#2D6A4F] text-white px-4 py-2 rounded-lg hover:bg-[#74C69D] transition-colors font-medium"
-                >
-                  Signup
-                </button>
-              </div>
-            </div>
-            <div className="md:hidden">
-              <button className="text-[#6C757D] hover:text-[#2D6A4F]">
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            {/* Left Side */}
-            <div>
-              {/* Top Tag */}
-              <div className="mb-6">
-                <span className="text-xs font-semibold text-[#2D6A4F] tracking-wider">INTELLIGENT PLANT CARE SYSTEM FOR NURSERIES.</span>
-              </div>
-              
-              {/* Headline */}
-              <h1 className="text-4xl md:text-5xl font-serif text-[#1B2022] mb-6 leading-tight">
-                Plants shouldn't die on a schedule.
-                <br />
-                <span className="text-2xl md:text-3xl font-serif text-[#6C757D] italic">They should be cared for when they actually need it.</span>
+            <div className="mb-10 text-left">
+              <h1 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                {isLogin ? 'Welcome\nback.' : 'Join the\nnursery.'}
               </h1>
-              
-              {/* Introductory Text */}
-              <p className="text-lg text-[#6C757D] mb-8 leading-relaxed">
-                AuraCare combines live weather data with plant biology to tell your team exactly when to act 
-                <span className="font-semibold"> not Monday, not Friday, but right now</span>, because it's 31°C in Birmingham today.
+              <p className="text-[13px] text-slate-500 dark:text-slate-400 mt-3 font-medium leading-relaxed">
+                {isLogin ? 'Sign in to access your dashboard.' : 'Create an account to start monitoring.'}
               </p>
-              
-              {/* Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 mb-8">
-                <button className="bg-[#2D6A4F] text-white px-8 py-3 rounded-lg font-semibold hover:bg-[#1B2022] transition-colors">
-                  START FREE TRIAL
-                </button>
-                <button className="border border-[#2D6A4F] text-[#2D6A4F] px-8 py-3 rounded-lg font-semibold hover:bg-[#2D6A4F] hover:text-white transition-colors">
-                  See how it works
-                  <span className="ml-1">?</span>
-                </button>
-              </div>
             </div>
-
-            {/* Right Side - Comparison Table */}
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-              <div className="grid grid-cols-2">
-                {/* Schedule-Based Column */}
-                <div className="bg-orange-50 p-4">
-                  <div className="flex items-center justify-center mb-4">
-                    <div className="w-6 h-6 bg-orange-500 rounded-full flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </div>
-                    <span className="ml-2 font-semibold text-orange-600">SCHEDULE-BASED</span>
-                  </div>
-                  <div className="space-y-4 text-sm">
-                    <div className="text-gray-700">
-                      Water every Monday regardless of conditions
-                    </div>
-                    <div className="text-gray-700">
-                      Fertilize in 30 days calendar reminder
-                    </div>
-                    <div className="text-gray-700">
-                      No record of who did what or when
-                    </div>
-                  </div>
+            {error && (
+              <div className="mb-6 px-4 py-3 rounded-2xl bg-red-500/5 border border-red-500/10 text-red-500 text-[11px] font-bold uppercase tracking-wider flex items-center gap-3">
+                <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                {error}
+              </div>
+            )}
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {!isLogin && (
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">Full Name</label>
+                  <input
+                    type="text"
+                    name="name"
+                    placeholder="Jane Smith"
+                    value={form.name}
+                    onChange={(e) => setForm({...form, name: e.target.value})}
+                    className="input-field h-12 text-sm px-5 bg-slate-50/50 dark:bg-white/5"
+                    required={!isLogin}
+                  />
                 </div>
-                
-                {/* Need-Based Column */}
-                <div className="bg-green-50 p-4">
-                  <div className="flex items-center justify-center mb-4">
-                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    </div>
-                    <span className="ml-2 font-semibold text-green-600">NEED-BASED</span>
-                  </div>
-                  <div className="space-y-4 text-sm">
-                    <div className="text-green-700 font-medium">
-                      This week Water Wednesday - heat spike detected
-                    </div>
-                    <div className="text-green-700 font-medium">
-                      Adjusted Fertilize in 18 days - low humidity stress
-                    </div>
-                    <div className="text-green-700 font-medium">
-                      Audit Trail J. Okafor - 09:42 GMT - Room 3
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Live Weather Data */}
-              <div className="bg-gray-50 p-4 border-t border-gray-200">
-                <div className="flex items-center justify-center">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></div>
-                  <span className="text-sm font-medium text-gray-700">LIVE · KATHMANDU, NEPAL</span>
-                </div>
-                <div className="text-center mt-2">
-                  <span className="text-lg font-semibold text-gray-800">31°C</span>
-                  <span className="text-gray-600 mx-2">·</span>
-                  <span className="text-gray-600">Humidity 18%</span>
-                  <span className="text-gray-600 mx-2">·</span>
-                  <span className="text-gray-600">Sunny</span>
-                </div>
-              </div>
-
-              {/* Action Required Button */}
-              <div className="p-4">
-                <button className="w-full bg-orange-400 text-white py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors">
-                  ACTION REQUIRED
-                </button>
-              </div>
-            </div>
-          </div>
-
-         
-        </div>
-      </section>
-      
-
-
-
-      {/* Features Grid */}
-      <section id="features" className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-[#F8F9F4] to-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-[#1B2022] mb-4">
-              Real-Time Environmental Monitoring
-            </h2>
-            <p className="text-xl text-[#6C757D] max-w-3xl mx-auto">
-              Advanced sensors and data visualization keep you informed about every aspect of plant health
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {/* Temperature Monitoring */}
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 border border-gray-100">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#F4A261] to-[#E76F51] rounded-xl flex items-center justify-center shadow-md">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                </div>
-                <span className="text-3xl font-bold text-[#1B2022]">24°C</span>
-              </div>
-              <h3 className="text-lg font-semibold text-[#1B2022] mb-2">Temperature</h3>
-              <p className="text-[#6C757D] text-sm mb-4">Optimal range maintained</p>
-              <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                <div className="h-full w-3/4 bg-gradient-to-r from-[#52B788] to-[#74C69D] rounded-full"></div>
-              </div>
-              <p className="text-xs text-[#6C757D] mt-2 font-medium">75% optimal</p>
-            </div>
-
-            {/* Humidity Monitoring */}
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 border border-gray-100">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#74C69D] to-[#52B788] rounded-xl flex items-center justify-center shadow-md">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                  </svg>
-                </div>
-                <span className="text-3xl font-bold text-[#1B2022]">65%</span>
-              </div>
-              <h3 className="text-lg font-semibold text-[#1B2022] mb-2">Humidity</h3>
-              <p className="text-[#6C757D] text-sm mb-4">Perfect moisture level</p>
-              <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                <div className="h-full w-5/6 bg-gradient-to-r from-[#52B788] to-[#74C69D] rounded-full"></div>
-              </div>
-              <p className="text-xs text-[#6C757D] mt-2 font-medium">85% optimal</p>
-            </div>
-
-            {/* Soil Moisture */}
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 border border-gray-100">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#2D6A4F] to-[#1B2022] rounded-xl flex items-center justify-center shadow-md">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                  </svg>
-                </div>
-                <span className="text-3xl font-bold text-[#1B2022]">42%</span>
-              </div>
-              <h3 className="text-lg font-semibold text-[#1B2022] mb-2">Soil Moisture</h3>
-              <p className="text-[#6C757D] text-sm mb-4">Needs watering soon</p>
-              <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                <div className="h-full w-2/5 bg-gradient-to-r from-[#F4A261] to-[#E76F51] rounded-full"></div>
-              </div>
-              <p className="text-xs text-[#F4A261] mt-2 font-medium">Action needed</p>
-            </div>
-
-            {/* Light Levels */}
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 border border-gray-100">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#F4A261] to-[#E76F51] rounded-xl flex items-center justify-center shadow-md">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                </div>
-                <span className="text-3xl font-bold text-[#1B2022]">850 lux</span>
-              </div>
-              <h3 className="text-lg font-semibold text-[#1B2022] mb-2">Light Intensity</h3>
-              <p className="text-[#6C757D] text-sm mb-4">Bright indirect light</p>
-              <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                <div className="h-full w-4/5 bg-gradient-to-r from-[#52B788] to-[#74C69D] rounded-full"></div>
-              </div>
-              <p className="text-xs text-[#6C757D] mt-2 font-medium">80% optimal</p>
-            </div>
-
-            {/* Nutrient Levels */}
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 border border-gray-100">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#52B788] to-[#74C69D] rounded-xl flex items-center justify-center shadow-md">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
-                  </svg>
-                </div>
-                <span className="text-3xl font-bold text-[#1B2022]">Good</span>
-              </div>
-              <h3 className="text-lg font-semibold text-[#1B2022] mb-2">Nutrient Levels</h3>
-              <p className="text-[#6C757D] text-sm mb-4">Balanced NPK ratio</p>
-              <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                <div className="h-full w-3/4 bg-gradient-to-r from-[#52B788] to-[#74C69D] rounded-full"></div>
-              </div>
-              <p className="text-xs text-[#6C757D] mt-2 font-medium">Healthy levels</p>
-            </div>
-
-            {/* pH Levels */}
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-all duration-300 border border-gray-100">
-              <div className="flex items-center justify-between mb-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-[#E63946] to-[#D62828] rounded-xl flex items-center justify-center shadow-md">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                </div>
-                <span className="text-3xl font-bold text-[#1B2022]">6.8</span>
-              </div>
-              <h3 className="text-lg font-semibold text-[#1B2022] mb-2">pH Level</h3>
-              <p className="text-[#6C757D] text-sm mb-4">Slightly acidic</p>
-              <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
-                <div className="h-full w-5/6 bg-gradient-to-r from-[#E63946] to-[#D62828] rounded-full"></div>
-              </div>
-              <p className="text-xs text-[#E63946] mt-2 font-medium">Adjustment needed</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* PWA Capabilities Section */}
-      <section id="pwa" className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl font-bold text-[#1B2022] mb-4">
-              Progressive Web App Features
-            </h2>
-            <p className="text-xl text-[#6C757D] max-w-3xl mx-auto">
-              Experience the power of native app functionality with web convenience
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-[#2D6A4F] rounded-lg flex items-center justify-center flex-shrink-0">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-[#1B2022] mb-2">Offline Mode</h3>
-                  <p className="text-[#6C757D]">
-                    Monitor and manage your plants even without internet connection. Critical data syncs automatically when you're back online.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-[#74C69D] rounded-lg flex items-center justify-center flex-shrink-0">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-[#1B2022] mb-2">Instant Installation</h3>
-                  <p className="text-[#6C757D]">
-                    Add AuraCare to your home screen with one click. No app store downloads required - works on any modern device.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-[#52B788] rounded-lg flex items-center justify-center flex-shrink-0">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-[#1B2022] mb-2">Lightning Fast</h3>
-                  <p className="text-[#6C757D]">
-                    Optimized performance with instant loading. Real-time updates and push notifications keep you informed.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start space-x-4">
-                <div className="w-12 h-12 bg-[#F4A261] rounded-lg flex items-center justify-center flex-shrink-0">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-                  </svg>
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-[#1B2022] mb-2">Secure & Reliable</h3>
-                  <p className="text-[#6C757D]">
-                    Enterprise-grade security with automatic updates. Your plant data is encrypted and backed up safely.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gradient-to-br from-[#2D6A4F] to-[#74C69D] rounded-2xl p-8 text-white">
-              <div className="text-center">
-                <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mb-6 mx-auto">
-                  <svg className="w-10 h-10" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <h3 className="text-2xl font-bold mb-4">Install AuraCare</h3>
-                <p className="mb-6 opacity-90">
-                  Get instant access to your plant care system from any device
-                </p>
-                <button className="bg-white text-[#2D6A4F] px-8 py-3 rounded-lg font-semibold hover:bg-opacity-90 transition-colors">
-                  Add to Home Screen
-                </button>
-                <p className="text-sm mt-4 opacity-75">
-                  Works on iOS, Android, and desktop browsers
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-     
-
-     <section className="py-20 px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-8">
-          <p className="text-sm text-[#6C757D] font-mono">// START TODAY</p>
-        </div>
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h1 className="text-5xl md:text-6xl font-serif text-[#1B2022] mb-6">
-              Your plants are waiting for
-              <span className="italic text-[#2D6A4F]"> better care.</span>
-            </h1>
-            <p className="text-xl text-[#6C757D] max-w-3xl mx-auto mb-12">
-              Join supported living facilities across the world using AuraCare to protect their green spaces and their compliance records.
-            </p>
-          </div>
-
-          {/* Email Signup Section */}
-          <div className="max-w-2xl mx-auto mb-16">
-            <div className="bg-white rounded-2xl shadow-lg p-8">
-              <div className="flex flex-col sm:flex-row gap-4">
+              )}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">Email Address</label>
                 <input
                   type="email"
-                  placeholder="manager@yourfacility.com.np"
-                  className="flex-1 px-6 py-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#2D6A4F] focus:border-transparent"
+                  name="email"
+                  placeholder="jane@nursery.com"
+                  value={form.email}
+                  onChange={(e) => setForm({...form, email: e.target.value})}
+                  className="input-field h-12 text-sm px-5 bg-slate-50/50 dark:bg-white/5"
+                  required
                 />
-                <button className="bg-[#2D6A4F] text-white px-8 py-4 rounded-lg font-semibold hover:bg-[#1B2022] transition-colors">
-                  Get Early Access
-                </button>
               </div>
-              <p className="text-center text-sm text-[#6C757D] mt-4">
-                Free 30-day trial · No credit card · Setup in under 10 minutes
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] ml-1">Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    placeholder="••••••••"
+                    value={form.password}
+                    onChange={(e) => setForm({...form, password: e.target.value})}
+                    className="input-field h-12 text-sm px-5 pr-12 bg-slate-50/50 dark:bg-white/5"
+                    required
+                  />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+              <button type="submit" disabled={loading} className="btn-primary w-full h-12 justify-center text-[11px] font-black uppercase tracking-[0.2em] mt-4 shadow-xl shadow-accent/20 group">
+                {loading ? <Loader2 size={16} className="animate-spin" /> : <> {isLogin ? 'Sign In' : 'Create Account'} <ArrowLeft size={14} className="rotate-180 group-hover:translate-x-1 transition-transform" /> </>}
+              </button>
+            </form>
+            <div className="mt-10 pt-8 border-t border-slate-100 dark:border-white/5 text-center">
+              <p className="text-[12px] text-slate-500 dark:text-slate-400 font-medium">
+                {isLogin ? "Don't have an account?" : 'Already have an account?'}{' '}
+                <button onClick={() => setIsLogin(!isLogin)} className="text-accent font-bold hover:underline ml-1">
+                  {isLogin ? 'Sign up for free' : 'Sign in to account'}
+                </button>
               </p>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+const Landingpage = () => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [authView, setAuthView] = useState('login');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Show popup if route is /auth
+  const isAuthOpen = location.pathname === '/auth';
+
+  const openAuth = (view = 'login') => {
+    setAuthView(view);
+    setMenuOpen(false);
+    navigate('/auth');
+  };
+
+  const closeAuth = () => {
+    navigate('/');
+  };
+
+  return (
+    <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-300">
+      <header className="sticky top-0 z-50 bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-slate-100 dark:border-white/5">
+        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-emerald-500 flex items-center justify-center">
+              <Leaf size={16} className="text-white" />
+            </div>
+            <span className="font-bold text-slate-900 dark:text-white text-base">AuraCare</span>
+          </div>
+          <nav className="hidden md:flex items-center gap-10">
+            <div className="flex items-center gap-8">
+              <a href="#features" className="text-[13px] font-bold text-slate-500 dark:text-slate-400 hover:text-accent transition-colors uppercase tracking-wider">Features</a>
+              <a href="#about" className="text-[13px] font-bold text-slate-500 dark:text-slate-400 hover:text-accent transition-colors uppercase tracking-wider">About</a>
+            </div>
+            <div className="h-6 w-px bg-slate-100 dark:bg-slate-800" />
+            <div className="flex items-center gap-6">
+              <ThemeToggle />
+              <div className="flex items-center gap-4">
+                <button onClick={() => openAuth('login')} className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-[0.15em] hover:text-accent transition-colors">Login</button>
+                <button onClick={() => openAuth('register')} className="btn-primary text-[10px] px-7 h-10 uppercase tracking-[0.15em] font-black shadow-xl shadow-emerald-500/20">Get Started</button>
+              </div>
+            </div>
+          </nav>
+          <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle />
+            <button onClick={() => setMenuOpen(!menuOpen)} className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800">
+              {menuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
+          </div>
+        </div>
+        {menuOpen && (
+          <div className="md:hidden bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 px-6 py-4 space-y-3">
+            <a href="#features" className="block text-sm text-slate-600 dark:text-slate-400 py-2">Features</a>
+            <a href="#about" className="block text-sm text-slate-600 dark:text-slate-400 py-2">About</a>
+            <button onClick={() => openAuth('register')} className="btn-primary w-full justify-center mt-2">Get Started</button>
+          </div>
+        )}
+      </header>
+
+      <AuthPopup isOpen={isAuthOpen} onClose={closeAuth} initialView={authView} />
+
+      {/* Hero */}
+      <section className="max-w-6xl mx-auto px-6 pt-24 pb-32 flex flex-col items-center text-center">
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/5 dark:bg-emerald-500/10 border border-emerald-500/10 mb-10">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+          <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 uppercase tracking-[0.2em]">Always-on Monitoring</span>
+        </div>
+        <h1 className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white leading-[1.05] tracking-tight mb-8 max-w-4xl">
+          Intelligent care for<br /><span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-600 to-teal-500 dark:from-emerald-400 dark:to-teal-300">modern nurseries</span>
+        </h1>
+        <p className="text-lg text-slate-500 dark:text-slate-400 max-w-xl mb-12 font-medium leading-relaxed">
+          AuraCare combines real-time sensor intelligence, automated alerts, and care scheduling into one platform.
+        </p>
+        <div className="flex flex-col sm:flex-row justify-center gap-4 mb-24 w-full sm:w-auto">
+          <button onClick={() => openAuth('register')} className="btn-primary px-10 py-4 text-xs font-black uppercase tracking-[0.2em] shadow-2xl shadow-accent/20">
+            Start Free <ArrowRight size={14} />
+          </button>
+          <button onClick={() => openAuth('login')} className="btn-secondary px-10 py-4 text-xs font-black uppercase tracking-[0.2em] bg-white dark:bg-slate-900 border-slate-100 dark:border-white/5">View Dashboard</button>
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-16 w-full max-w-4xl border-y border-slate-100 dark:border-white/5 py-12">
+          {stats.map((s) => (
+            <div key={s.label} className="flex flex-col items-center">
+              <div className="text-4xl font-black text-slate-900 dark:text-white tracking-tighter">{s.value}</div>
+              <div className="text-[9px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-2">{s.label}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Features */}
+      <section id="features" className="bg-[#fafafa] dark:bg-slate-900/50 py-24 border-y border-slate-100 dark:border-white/5">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="text-center mb-16 space-y-3">
+            <h2 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white tracking-tight">Everything you need to thrive</h2>
+            <p className="text-slate-500 dark:text-slate-400 max-w-xl mx-auto text-sm font-medium">Six sensor-driven modules working in harmony to keep your plants at peak health.</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {features.map((f) => (
+              <div key={f.title} className="bg-white dark:bg-slate-900/40 rounded-3xl p-8 border border-slate-100 dark:border-white/5 hover:border-accent transition-all duration-300 group">
+                <div className={`w-12 h-12 rounded-2xl ${f.bg} flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500`}>
+                  <f.icon size={20} className={f.color} />
+                </div>
+                <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2">{f.title}</h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed font-medium">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Built for section */}
+      <section id="about" className="py-24">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid md:grid-cols-2 gap-24 items-center">
+            <div className="space-y-10 text-left">
+              <div className="space-y-4">
+                <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">Built for modern<br />nurseries</h2>
+                <p className="text-base text-slate-500 dark:text-slate-400 leading-relaxed font-medium max-w-md">
+                  Whether you manage a boutique greenhouse or a large-scale commercial operation, AuraCare scales with you. Real data, real time, zero downtime.
+                </p>
+              </div>
+              <ul className="space-y-5">
+                {['Real-time readings across all sensor zones', 'Staff scheduling and task assignment', 'Automated alerts for out-of-range conditions', 'Historical trend analysis and reporting'].map((item) => (
+                  <li key={item} className="flex items-center gap-4">
+                    <div className="w-6 h-6 rounded-lg bg-emerald-500/5 flex items-center justify-center shrink-0 border border-emerald-500/10">
+                      <CheckCircle size={14} className="text-emerald-500" />
+                    </div>
+                    <span className="text-[11px] font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest">{item}</span>
+                  </li>
+                ))}
+              </ul>
+              <button onClick={() => openAuth('register')} className="btn-primary px-8 py-3.5 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-accent/10">Get started <ArrowRight size={14} /></button>
+            </div>
+            <div className="bg-slate-900 dark:bg-slate-900/80 rounded-[3rem] p-12 space-y-8 border border-white/5 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-[100px] -mr-32 -mt-32" />
+              <div className="flex items-center justify-between mb-4 relative">
+                <span className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em]">Zone Status</span>
+                <span className="text-[9px] text-emerald-400 font-black flex items-center gap-2 uppercase tracking-[0.2em] bg-emerald-400/5 px-4 py-1.5 rounded-full border border-emerald-400/10">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Live Sensor
+                </span>
+              </div>
+              {[
+                { label: 'Temperature', val: '24°C', pct: 72, color: 'bg-emerald-400' },
+                { label: 'Humidity', val: '65%', pct: 65, color: 'bg-emerald-500' },
+                { label: 'Light', val: '820 lux', pct: 55, color: 'bg-emerald-600' },
+                { label: 'Soil Moisture', val: '42%', pct: 42, color: 'bg-emerald-700' },
+              ].map((r) => (
+                <div key={r.label} className="space-y-3 relative">
+                  <div className="flex justify-between text-[10px] font-black uppercase tracking-[0.2em]">
+                    <span className="text-white/30">{r.label}</span>
+                    <span className="text-white">{r.val}</span>
+                  </div>
+                  <div className="h-1 bg-white/5 rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full ${r.color} opacity-80`} style={{ width: `${r.pct}%` }} />
+                  </div>
+                </div>
+              ))}
+              <div className="grid grid-cols-2 gap-6 pt-6 relative">
+                <div className="bg-white/5 rounded-2xl p-5 border border-white/5">
+                  <div className="text-emerald-400 font-black text-2xl tracking-tighter">99.9%</div>
+                  <div className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] mt-1.5">Uptime SLA</div>
+                </div>
+                <div className="bg-white/5 rounded-2xl p-5 border border-white/5">
+                  <div className="text-emerald-400 font-black text-2xl tracking-tighter">AES-256</div>
+                  <div className="text-[9px] font-black text-white/30 uppercase tracking-[0.2em] mt-1.5">Security</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-
+      {/* CTA */}
+      <section className="bg-emerald-600 dark:bg-emerald-700 py-20">
+        <div className="max-w-3xl mx-auto px-6 text-center space-y-8">
+          <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight">Ready to grow smarter?</h2>
+          <p className="text-emerald-100 font-medium text-lg">Join nurseries already using AuraCare to monitor and scale their operations.</p>
+          <button onClick={() => openAuth('register')} className="inline-flex items-center gap-3 px-10 py-4 rounded-2xl bg-white text-emerald-700 text-xs font-black uppercase tracking-[0.2em] hover:bg-emerald-50 transition-all shadow-2xl shadow-black/10">
+            Start for free <ArrowRight size={16} />
+          </button>
+        </div>
+      </section>
 
       {/* Footer */}
-      <footer className="bg-[#1B2022] text-white py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-               
-                <span className="text-xl font-bold"> 🌿 AuraCare</span>
+      <footer className="bg-slate-900 text-slate-400 py-12">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-10 border-b border-white/5 pb-12">
+            <div className="col-span-2 md:col-span-1">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center">
+                  <Leaf size={13} className="text-white" />
+                </div>
+                <span className="font-bold text-white text-sm">AuraCare</span>
               </div>
-              <p className="text-gray-400 text-sm">
-                Smart plant care for modern spaces
-              </p>
+              <p className="text-xs text-slate-500 leading-relaxed">Intelligent plant care for serious growers.</p>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Product</h4>
-              <ul className="space-y-2 text-gray-400 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">PWA</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
+              <p className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-3">Product</p>
+              <ul className="space-y-2 text-xs">
+                <li><a href="#features" className="hover:text-white transition-colors">Features</a></li>
+                <li><button onClick={() => openAuth('login')} className="hover:text-white transition-colors">Dashboard</button></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Company</h4>
-              <ul className="space-y-2 text-gray-400 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">About</a></li>
+              <p className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-3">Company</p>
+              <ul className="space-y-2 text-xs">
                 <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
                 <li><a href="#" className="hover:text-white transition-colors">Contact</a></li>
               </ul>
             </div>
             <div>
-              <h4 className="font-semibold mb-4">Support</h4>
-              <ul className="space-y-2 text-gray-400 text-sm">
-                <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-white transition-colors">Status</a></li>
+              <p className="text-xs font-semibold text-slate-300 uppercase tracking-wider mb-3">Legal</p>
+              <ul className="space-y-2 text-xs">
+                <li><a href="#" className="hover:text-white transition-colors">Privacy</a></li>
+                <li><a href="#" className="hover:text-white transition-colors">Terms</a></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400 text-sm">
-            <p>&copy; 2026 AuraCare. All rights reserved.</p>
+          <div className="pt-6 flex flex-col sm:flex-row justify-between items-center gap-3">
+            <p className="text-xs text-slate-500">&copy; {new Date().getFullYear()} AuraCare. All rights reserved.</p>
+            <Globe size={15} className="text-slate-600" />
           </div>
         </div>
       </footer>

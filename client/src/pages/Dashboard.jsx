@@ -1,361 +1,165 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
+import DashboardLayout from '../components/DashboardLayout';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { motion } from 'framer-motion';
+import {
+  Thermometer, Droplets, Sun, FlaskConical,
+  CheckSquare, Sprout, ArrowUpRight, ShieldCheck, Zap, Activity,
+  Users, Settings as SettingsIcon
+} from 'lucide-react';
+
+const sensorCards = [
+  { label: 'Temperature', value: '24°C', status: 'Optimal', color: 'text-orange-500', bg: 'bg-orange-50 dark:bg-orange-900/20', icon: Thermometer, path: '/dashboard/temperature', statusColor: 'badge-green' },
+  { label: 'Humidity', value: '65%', status: 'Optimal', color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20', icon: Droplets, path: '/dashboard/humidity', statusColor: 'badge-green' },
+  { label: 'Soil Moisture', value: '42%', status: 'Warning', color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20', icon: Droplets, path: '/dashboard/soil-moisture', statusColor: 'badge-yellow' },
+  { label: 'Light Intensity', value: '820 lux', status: 'Optimal', color: 'text-amber-500', bg: 'bg-amber-50 dark:bg-amber-900/20', icon: Sun, path: '/dashboard/light-intensity', statusColor: 'badge-green' },
+  { label: 'Nutrients (EC)', value: '1.8 mS', status: 'Optimal', color: 'text-purple-500', bg: 'bg-purple-50 dark:bg-purple-900/20', icon: FlaskConical, path: '/dashboard/nutrients', statusColor: 'badge-green' },
+  { label: 'pH Level', value: '6.2', status: 'Critical', color: 'text-red-500', bg: 'bg-red-50 dark:bg-red-900/20', icon: FlaskConical, path: '/dashboard/ph-level', statusColor: 'badge-red' },
+];
+
+const summaryStats = [
+  { label: 'Total Plants', value: '248', icon: Sprout, color: 'text-emerald-600', bg: 'bg-emerald-50 dark:bg-emerald-900/20' },
+  { label: 'Active Sensors', value: '6', icon: Activity, color: 'text-blue-600', bg: 'bg-blue-50 dark:bg-blue-900/20' },
+  { label: 'Tasks Today', value: '12', icon: CheckSquare, color: 'text-amber-600', bg: 'bg-amber-50 dark:bg-amber-900/20' },
+  { label: 'System Health', value: '98%', icon: ShieldCheck, color: 'text-indigo-600', bg: 'bg-indigo-50 dark:bg-indigo-900/20' },
+];
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { logout, accessToken, user } = useAuth();
-  const [currentTime, setCurrentTime] = useState(new Date());
 
-  useEffect(() => {
-    // Redirect to auth if no token
-    if (!accessToken) {
-      navigate('/auth');
-      return;
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.1 }
     }
-
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 60000);
-
-    return () => clearInterval(timer);
-  }, [navigate, accessToken]);
-
-  const formatTime = (date) => {
-    const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    const h = String(date.getHours()).padStart(2, '0');
-    const m = String(date.getMinutes()).padStart(2, '0');
-    return `${days[date.getDay()]} ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()} · ${h}:${m}`;
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/auth');
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 }
   };
 
   return (
-    <div className="min-h-screen bg-[#F0EDE6] font-sans antialiased">
-      {/* Topbar */}
-      <header className="bg-[#1C3D2E] px-6 py-3 flex items-center justify-between sticky top-0 z-50 shadow-sm">
-        <div className="flex items-center gap-3">
-          <div />
-          <span className="font-['Cormorant_Garamond'] text-white text-xl tracking-wide"> 🌿 AuraCare</span>
-        </div>
-        <div className="flex items-center gap-6">
-          <div className="text-sm font-['JetBrains_Mono'] text-white/90">
-            <span className="text-[#74C69D] font-medium">28°C</span> · Kathmandu · Sunny · 35% RH
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-[#74C69D]/20 flex items-center justify-center text-base font-medium text-[#74C69D] shadow-sm">
-              {user?.name?.charAt(0).toUpperCase() || 'U'}
-            </div>
-            <div className="hidden">
-              <div className="text-sm text-white/90">{user?.name || 'User'}</div>
-              <span className="text-[10px] px-2 py-0.5 bg-[#74C69D]/15 text-[#74C69D] font-['JetBrains_Mono'] rounded tracking-wide">
-                ADMIN
-              </span>
-            </div>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="bg-[#74C69D]/20 hover:bg-[#74C69D]/30 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium border border-[#74C69D]/30"
-          >
-            Logout
-          </button>
-        </div>
-      </header>
+    <DashboardLayout>
+      <motion.div 
+        initial="hidden" 
+        animate="visible" 
+        variants={containerVariants}
+        className="space-y-8 max-w-5xl"
+      >
+        {/* Page Header */}
+        <motion.div variants={itemVariants}>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">System Overview</h1>
+          <p className="text-slate-500 dark:text-slate-400 mt-1">Real-time intelligence from your nursery ecosystem</p>
+        </motion.div>
 
-      <div className="flex h-[calc(100vh-60px)]">
-        {/* Sidebar */}
-        <aside className="w-56 bg-[#1C3D2E] py-6 border-r border-[#74C69D]/10 overflow-y-auto flex flex-col">
-          <nav className="flex-1">
-            <div className="px-5 py-2 text-[10px] text-white/30 font-['JetBrains_Mono'] uppercase tracking-[0.15em]">
-              Overview
-            </div>
-            <button onClick={() => navigate('/dashboard')} className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
-              <span className="text-base w-5 text-center">◈</span> Dashboard
-            </button>
-            <button className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
-              <span className="text-base w-5 text-center">❧</span> All Plants
-              <span className="ml-auto bg-[#C1440E] text-white text-[10px] px-2 py-0.5 rounded-full font-['JetBrains_Mono']">5</span>
-            </button>
-            <button onClick={() => navigate('/dashboard/daily-tasks')} className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
-              <span className="text-base w-5 text-center">✦</span> Daily Tasks
-              <span className="ml-auto bg-[#C9821A] text-white text-[10px] px-2 py-0.5 rounded-full font-['JetBrains_Mono']">8</span>
-            </button>
-
-            <div className="px-5 py-2 mt-6 text-[10px] text-white/30 font-['JetBrains_Mono'] uppercase tracking-[0.15em]">
-              Monitoring
-            </div>
-            <button onClick={() => navigate('/dashboard/temperature')} className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
-              <span className="text-base w-5 text-center">🌡️</span> Temperature
-            </button>
-            <button onClick={() => navigate('/dashboard/humidity')} className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
-              <span className="text-base w-5 text-center">💧</span> Humidity
-            </button>
-            <button onClick={() => navigate('/dashboard/soil-moisture')} className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
-              <span className="text-base w-5 text-center">🌱</span> Soil Moisture
-            </button>
-            <button onClick={() => navigate('/dashboard/light-intensity')} className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
-              <span className="text-base w-5 text-center">☀️</span> Light Intensity
-            </button>
-            <button onClick={() => navigate('/dashboard/nutrients')} className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
-              <span className="text-base w-5 text-center">🥕</span> Nutrients
-            </button>
-            <button onClick={() => navigate('/dashboard/ph-level')} className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
-              <span className="text-base w-5 text-center">⚗️</span> pH Level
-            </button>
-
-            <div className="px-5 py-2 mt-6 text-[10px] text-white/30 font-['JetBrains_Mono'] uppercase tracking-[0.15em]">
-              Management
-            </div>
-            <button className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
-              <span className="text-base w-5 text-center">◎</span> Staff
-            </button>
-            <button className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
-              <span className="text-base w-5 text-center">⊡</span> Rooms
-            </button>
-            <button className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
-              <span className="text-base w-5 text-center">◻</span> Audit Log
-            </button>
-
-            <div className="px-5 py-2 mt-6 text-[10px] text-white/30 font-['JetBrains_Mono'] uppercase tracking-[0.15em]">
-              Communication
-            </div>
-            <button className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
-              <span className="text-base w-5 text-center">⋮⋮</span> Team Chat
-            </button>
-            <button className="w-full flex items-center gap-3 px-5 py-2.5 text-sm text-white/50 hover:text-white hover:bg-[#74C69D]/8 rounded-r-lg transition-all cursor-pointer border-l-[3px] border-transparent hover:border-[#74C69D]">
-              <span className="text-base w-5 text-center">◈</span> Reports
-            </button>
-          </nav>
-
-          <div className="mt-auto px-5 pt-4 border-t border-white/10">
-            <p className="text-xs text-white/30 font-['JetBrains_Mono'] leading-relaxed">
-              Green Valley Nursery<br />
-              B1 1AA · Kathmandu
-            </p>
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 overflow-y-auto px-8 py-6">
-          {/* Page Header */}
-          <div className="mb-6">
-            <h1 className="font-['Cormorant_Garamond'] text-3xl font-semibold text-[#1C3D2E]">
-              Facility Overview
-            </h1>
-            <div className="text-sm text-[#8A9BA3] mt-2 font-['JetBrains_Mono'] tracking-wide">
-              {formatTime(currentTime)} · 6 rooms · 4 staff on shift
-            </div>
-          </div>
-
-          {/* KPI Cards */}
-          <div className="grid grid-cols-4 gap-5 mb-8">
-            <div className="bg-white border border-[#DDD9D2] rounded-xl p-5 shadow-sm">
-              <div className="font-['Cormorant_Garamond'] text-5xl text-[#1C3D2E] leading-tight">32</div>
-              <div className="text-sm text-[#8A9BA3] mt-2 font-['JetBrains_Mono'] uppercase tracking-wider">Total Plants</div>
-              <div className="text-xs mt-3 flex gap-4 flex-wrap">
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 bg-[#2D6A4F] rounded-full" />
-                  <span className="text-[#2D6A4F] font-medium">24 healthy</span>
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 bg-[#C9821A] rounded-full" />
-                  <span className="text-[#C9821A] font-medium">5 warning</span>
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 bg-[#C1440E] rounded-full" />
-                  <span className="text-[#C1440E] font-medium">3 urgent</span>
-                </span>
+        {/* Summary Stats */}
+        <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {summaryStats.map((s) => (
+            <div key={s.label} className="card relative overflow-hidden group">
+              <div className="flex items-center gap-4 relative z-10">
+                <div className={`w-12 h-12 rounded-2xl ${s.bg} flex items-center justify-center shrink-0 transition-transform group-hover:scale-110`}>
+                  <s.icon size={22} className={s.color} />
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">{s.value}</div>
+                  <div className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{s.label}</div>
+                </div>
               </div>
+              <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-transparent to-slate-100 dark:to-slate-800/50 -mr-12 -mt-12 rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
             </div>
-            <div className="bg-white border border-[#DDD9D2] rounded-xl p-5 shadow-sm">
-              <div className="font-['Cormorant_Garamond'] text-5xl text-[#C1440E] leading-tight">12</div>
-              <div className="text-sm text-[#8A9BA3] mt-2 font-['JetBrains_Mono'] uppercase tracking-wider">Tasks Due Today</div>
-              <div className="text-xs mt-3 flex gap-4 flex-wrap">
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 bg-[#C1440E] rounded-full" />
-                  <span className="text-[#C1440E] font-medium">6 urgent</span>
-                </span>
-                <span className="flex items-center gap-1">
-                  <span className="w-2 h-2 bg-[#C9821A] rounded-full" />
-                  <span className="text-[#C9821A] font-medium">4 warn</span>
-                </span>
-              </div>
-            </div>
-            <div className="bg-white border border-[#DDD9D2] rounded-xl p-5 shadow-sm">
-              <div className="font-['Cormorant_Garamond'] text-5xl text-[#2D6A4F] leading-tight">87%</div>
-              <div className="text-sm text-[#8A9BA3] mt-2 font-['JetBrains_Mono'] uppercase tracking-wider">Compliance Rate</div>
-              <div className="text-sm mt-3 text-[#8A9BA3]">Tasks completed on time this week</div>
-            </div>
-            <div className="bg-white border border-[#DDD9D2] rounded-xl p-5 shadow-sm">
-              <div className="font-['Cormorant_Garamond'] text-5xl text-[#1C3D2E] leading-tight">4/6</div>
-              <div className="text-sm text-[#8A9BA3] mt-2 font-['JetBrains_Mono'] uppercase tracking-wider">Staff Active</div>
-              <div className="text-sm mt-3 text-[#8A9BA3]">2 staff off shift today</div>
-            </div>
+          ))}
+        </motion.div>
+
+        {/* Sensor Grid */}
+        <motion.div variants={itemVariants}>
+          <div className="flex items-center justify-between mb-4 px-1">
+            <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200">Environmental Monitoring</h2>
+            <span className="flex items-center gap-2 text-[10px] text-accent uppercase tracking-widest font-bold bg-accent/5 px-2.5 py-1 rounded-full border border-accent/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse"></span> Live Stream
+            </span>
           </div>
-
-          {/* Three Column Layout */}
-          <div className="grid grid-cols-[1.4fr_1fr_0.9fr] gap-5 mb-8">
-            {/* Room Health */}
-            <div className="bg-white border border-[#DDD9D2] rounded-xl p-5 shadow-sm">
-              <div className="text-sm text-[#8A9BA3] uppercase tracking-wider font-['JetBrains_Mono'] mb-4">
-                Plant health by room
-              </div>
-
-              {[
-                { room: 'Living Room A', healthy: 3, urgent: 1, warning: 1, total: 6 },
-                { room: 'Dining Area', healthy: 4, warning: 1, total: 5 },
-                { room: 'Garden Terrace', healthy: 5, urgent: 1, total: 8 },
-                { room: 'Room 1 — Bedroom', healthy: 4, total: 4 },
-                { room: 'Room 3 — Bedroom', healthy: 3, warning: 1, total: 3 },
-                { room: 'Balcony', healthy: 6, total: 6 },
-              ].map((item, idx) => (
-                <div key={idx} className="flex items-center gap-3 py-2.5 border-b border-[#EDE8DF] last:border-0">
-                  <div className="text-base text-[#1C3D2E] flex-1 font-medium">{item.room}</div>
-                  <div className="flex-1 h-1.5 bg-[#EDE8DF] rounded-full overflow-hidden flex gap-0.5">
-                    {item.healthy && <div className="h-full bg-[#2D6A4F]" style={{ flex: item.healthy }} />}
-                    {item.warning && <div className="h-full bg-[#C9821A]" style={{ flex: item.warning }} />}
-                    {item.urgent && <div className="h-full bg-[#C1440E]" style={{ flex: item.urgent }} />}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {sensorCards.map((card) => (
+              <motion.button
+                key={card.label}
+                whileHover={{ y: -5 }}
+                onClick={() => navigate(card.path)}
+                className="card text-left relative overflow-hidden group border-slate-200/60 dark:border-slate-800"
+              >
+                <div className="flex items-start justify-between mb-4 relative z-10">
+                  <div className={`w-10 h-10 rounded-xl ${card.bg} flex items-center justify-center shadow-lg shadow-black/5`}>
+                    <card.icon size={18} className={card.color} />
                   </div>
-                  <div className="text-sm text-[#8A9BA3] font-['JetBrains_Mono'] min-w-[52px] text-right">
-                    {item.total} plants
+                  <ArrowUpRight size={16} className="text-slate-300 dark:text-slate-600 group-hover:text-accent transition-colors" />
+                </div>
+                <div className="text-3xl font-bold text-slate-900 dark:text-white mb-2 tracking-tight">{card.value}</div>
+                <div className="flex items-center justify-between relative z-10">
+                  <span className="text-sm font-medium text-slate-500 dark:text-slate-400">{card.label}</span>
+                  <span className={`${card.statusColor} text-[10px] px-2.5 py-1 rounded-full font-bold uppercase tracking-wider`}>{card.status}</span>
+                </div>
+                {/* Accent Glow Background */}
+                <div className="absolute inset-0 bg-gradient-to-br from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Bottom Row */}
+        <motion.div variants={itemVariants} className="grid md:grid-cols-2 gap-6">
+          {/* Alerts */}
+          <div className="card border-l-4 border-l-amber-500">
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <Zap size={16} className="text-amber-500" />
+                <h3 className="font-bold text-slate-800 dark:text-slate-200">System Alerts</h3>
+              </div>
+              <span className="text-[10px] font-bold text-slate-400 uppercase">Recent 24h</span>
+            </div>
+            <div className="space-y-4">
+              {[
+                { type: 'Critical', message: 'pH Level below 6.0 in Zone 3', time: '5 min ago', color: 'badge-red' },
+                { type: 'Warning', message: 'Soil moisture dropping in Zone 1', time: '22 min ago', color: 'badge-yellow' },
+              ].map((alert, i) => (
+                <div key={i} className="flex items-start gap-4 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/50 hover:border-accent/20 transition-colors group">
+                  <span className={`${alert.color} text-[9px] px-2 py-0.5 rounded-full font-bold shrink-0 mt-0.5`}>{alert.type}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-700 dark:text-slate-300 truncate group-hover:text-slate-900 dark:group-hover:text-white transition-colors">{alert.message}</p>
+                    <p className="text-[10px] text-slate-400 mt-0.5">{alert.time}</p>
                   </div>
                 </div>
               ))}
-
-              <div className="flex gap-5 mt-4 text-sm text-[#8A9BA3]">
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 bg-[#2D6A4F] rounded-sm" /> Healthy
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 bg-[#C9821A] rounded-sm" /> Warning
-                </span>
-                <span className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 bg-[#C1440E] rounded-sm" /> Urgent
-                </span>
-              </div>
-            </div>
-
-            {/* Task Activity */}
-            <div className="bg-white border border-[#DDD9D2] rounded-xl p-5 shadow-sm">
-              <div className="text-sm text-[#8A9BA3] uppercase tracking-wider font-['JetBrains_Mono'] mb-4">
-                Task activity today
-              </div>
-
-              <div className="space-y-1">
-                {[
-                  { time: '09:42', status: 'completed', name: 'P. Sharma', action: 'watered Snake Plant', location: 'Room 3', state: 'Completed' },
-                  { time: '10:15', status: 'completed', name: 'R. Gurung', action: 'inspected Peace Lily', location: 'Living Room A', state: 'Completed' },
-                  { time: '11:30', status: 'completed', name: 'M. Karki', action: 'watered Spider Plant', location: 'Dining Area', state: 'Completed' },
-                  { time: '13:45', status: 'warning', name: 'S. Tamang', action: 'watering Rubber Fig', location: 'Garden Terrace', state: 'Pending' },
-                  { time: '—', status: 'urgent', name: 'Unassigned', action: 'Money Plant urgent', location: 'Balcony', state: 'Not started', overdue: true },
-                  { time: '—', status: 'urgent', name: 'Unassigned', action: 'Aloe vera critical', location: 'Living Room A', state: 'Not started', overdue: true },
-                ].map((task, i) => (
-                  <div key={i} className="flex gap-3 py-2 border-b border-[#EDE8DF] last:border-0 items-start">
-                    <div className="font-['JetBrains_Mono'] text-base text-[#8A9BA3] min-w-[44px] pt-0.5">{task.time}</div>
-                    <div className={`w-2 h-2 rounded-full mt-1.5 ${
-                      task.status === 'completed' ? 'bg-[#2D6A4F]' : task.status === 'warning' ? 'bg-[#C9821A]' : 'bg-[#C1440E]'
-                    }`} />
-                    <div className="text-lg text-[#1C3D2E] leading-relaxed flex-1">
-                      <strong className={
-                        task.status === 'completed' ? 'text-[#2D6A4F]' : task.status === 'warning' ? 'text-[#C9821A]' : 'text-[#C1440E]'
-                      }>{task.name}</strong> {task.action}
-                      {task.overdue && (
-                        <span className="inline-block text-[12px] px-2 py-0.5 bg-[#C1440E]/10 text-[#C1440E] font-['JetBrains_Mono'] rounded ml-2">Overdue</span>
-                      )}
-                      <div className="text-base text-[#8A9BA3] mt-1">{task.location} · {task.state}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Weather & Care Engine */}
-            <div className="bg-white border border-[#DDD9D2] rounded-xl p-5 shadow-sm">
-              <div className="text-sm text-[#8A9BA3] uppercase tracking-wider font-['JetBrains_Mono'] mb-4">
-                Weather & care engine
-              </div>
-
-              <div className="bg-[#1C3D2E] rounded-xl p-5 mb-4">
-                <div className="font-['Cormorant_Garamond'] text-6xl text-white leading-none">28°C</div>
-                <div className="text-sm text-white/70 font-['JetBrains_Mono'] mt-2">Kathmandu, B1 1AA · Sunny</div>
-                <div className="grid grid-cols-2 gap-3 mt-4">
-                  <div className="bg-white/8 rounded-lg p-3">
-                    <div className="font-['JetBrains_Mono'] text-base text-[#74C69D]">35%</div>
-                    <div className="text-sm text-white/50 uppercase tracking-wider mt-1">Humidity</div>
-                  </div>
-                  <div className="bg-white/8 rounded-lg p-3">
-                    <div className="font-['JetBrains_Mono'] text-base text-[#74C69D]">9</div>
-                    <div className="text-sm text-white/50 uppercase tracking-wider mt-1">UV Index</div>
-                  </div>
-                  <div className="bg-white/8 rounded-lg p-3">
-                    <div className="font-['JetBrains_Mono'] text-base text-[#74C69D]">12 km/h</div>
-                    <div className="text-sm text-white/50 uppercase tracking-wider mt-1">Wind</div>
-                  </div>
-                  <div className="bg-white/8 rounded-lg p-3">
-                    <div className="font-['JetBrains_Mono'] text-base text-[#C1440E]">High</div>
-                    <div className="text-sm text-white/50 uppercase tracking-wider mt-1">Risk Level</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="bg-[#C1440E]/8 border border-[#C1440E]/20 rounded-lg p-4 text-base text-[#C1440E] leading-relaxed mb-4">
-                <strong className="block mb-1 text-sm uppercase tracking-wider font-['JetBrains_Mono']">Care Engine · Today's Adjustments</strong>
-                28°C detected · 8 tasks rescheduled earlier. Humidity 35% below threshold for 6 species. Next engine run 18:00.
-              </div>
-
-              <div className="text-base text-[#3D4A4F] bg-[#F5F2EB] rounded-lg p-4 leading-relaxed">
-                <strong className="block mb-1 text-sm uppercase tracking-wider font-['JetBrains_Mono'] text-[#2D6A4F]">Next 48hr forecast</strong>
-                Tue: 30°C · High risk · Wed: 26°C · Medium risk
-              </div>
             </div>
           </div>
 
-          {/* Audit Log */}
-          <div className="bg-white border border-[#DDD9D2] rounded-xl p-5 shadow-sm mb-6">
-            <div className="text-sm text-[#8A9BA3] uppercase tracking-wider font-['JetBrains_Mono'] mb-4">
-              Recent audit log
+          {/* Quick Actions */}
+          <div className="card border-l-4 border-l-accent">
+            <div className="flex items-center gap-2 mb-5">
+              <Activity size={16} className="text-accent" />
+              <h3 className="font-bold text-slate-800 dark:text-slate-200">Fast Navigation</h3>
             </div>
-            <div className="grid grid-cols-2 gap-0">
-              <div className="pr-5 border-r border-[#EDE8DF]">
-                {[
-                  { time: '09:42:17', name: 'P. Sharma', action: 'completed WATER · Snake Plant · Room 3', id: 'uid_041' },
-                  { time: '10:15:55', name: 'R. Gurung', action: 'completed INSPECT · Peace Lily · Living Room A', id: 'uid_041' },
-                  { time: '11:30:02', name: 'M. Karki', action: 'completed WATER · Spider Plant · Dining Area', id: 'uid_022' },
-                ].map((log, i) => (
-                  <div key={i} className="flex gap-3 py-2 border-b border-[#EDE8DF] last:border-0 items-baseline">
-                    <div className="font-['JetBrains_Mono'] text-sm text-[#8A9BA3] min-w-[64px]">{log.time}</div>
-                    <div className="text-base text-[#1C3D2E] leading-relaxed flex-1">
-                      <strong className="text-[#2D6A4F]">{log.name}</strong> {log.action}
-                    </div>
-                    <div className="font-['JetBrains_Mono'] text-sm text-[#8A9BA3]">{log.id}</div>
-                  </div>
-                ))}
-              </div>
-              <div className="pl-5">
-                {[
-                  { time: '13:31:44', name: 'S. Tamang', action: 'added plant · Money Plant · Balcony', id: 'uid_001' },
-                  { time: '15:00:00', name: 'System', action: 'regenerated daily tasks · 4 workers · weather updated', id: 'cron' },
-                  { time: '15:02:11', name: 'System', action: 'flagged Money Plant URGENT · Balcony · 28°C', id: 'engine' },
-                ].map((log, i) => (
-                  <div key={i} className="flex gap-3 py-2 border-b border-[#EDE8DF] last:border-0 items-baseline">
-                    <div className="font-['JetBrains_Mono'] text-sm text-[#8A9BA3] min-w-[64px]">{log.time}</div>
-                    <div className="text-sm text-[#1C3D2E] leading-relaxed flex-1">
-                      <strong className="text-[#2D6A4F]">{log.name}</strong> {log.action}
-                    </div>
-                    <div className="font-['JetBrains_Mono'] text-sm text-[#8A9BA3]">{log.id}</div>
-                  </div>
-                ))}
-              </div>
+            <div className="grid grid-cols-2 gap-3">
+              {[
+                { label: 'Daily Tasks', path: '/dashboard/daily-tasks', icon: CheckSquare },
+                { label: 'Inventory', path: '/dashboard/plants', icon: Sprout },
+                { label: 'Staff', path: '/dashboard/staff', icon: Users },
+                { label: 'Settings', path: '/dashboard/settings', icon: SettingsIcon },
+              ].map((a) => (
+                <button
+                  key={a.label}
+                  onClick={() => navigate(a.path)}
+                  className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/40 border border-slate-100 dark:border-slate-800/50 hover:border-accent hover:bg-accent/5 group transition-all"
+                >
+                  <a.icon size={20} className="text-slate-400 group-hover:text-accent transition-colors" />
+                  <span className="text-xs font-bold text-slate-600 dark:text-slate-400 group-hover:text-accent">{a.label}</span>
+                </button>
+              ))}
             </div>
           </div>
-
-          </main>
-      </div>
-    </div>
+        </motion.div>
+      </motion.div>
+    </DashboardLayout>
   );
 };
 

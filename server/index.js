@@ -4,6 +4,8 @@ import cookieParser from 'cookie-parser';
 import compression from 'compression';
 import morgan from 'morgan';
 import authRoutes from './routes/auth.js';
+import userRoutes from './routes/user.js';
+import prisma from './utils/prisma.js';
 import { config } from './utils/config.js';
 import logger from './utils/logger.js';
 import { securityHeaders, apiRateLimit, corsErrorHandler } from './middleware/security.js';
@@ -63,6 +65,7 @@ app.get('/api/health/ready', readinessCheck);
 
 // API routes
 app.use('/api/auth', authRoutes);
+app.use('/api/user', userRoutes);
 
 // CORS error handler
 app.use(corsErrorHandler);
