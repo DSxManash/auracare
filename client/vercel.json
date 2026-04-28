@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://auracare-backend.onrender.com/api/:path*"
+      "destination": "https://auracare-backend-gp1w.onrender.com/api/:path*"
     },
     {
       "source": "/(.*)",
