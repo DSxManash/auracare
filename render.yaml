@@ -13,10 +13,16 @@ services:
       - key: PORT
         value: 10000
       - key: CLIENT_URL
-        value: https://auracare-coral.vercel.app # Your hosted frontend URL
+        value: https://auracare-coral.vercel.app
+      - key: ACCESS_TOKEN_EXPIRY
+        value: 16m
+      - key: REFRESH_TOKEN_EXPIRY
+        value: 7d
+      - key: REFRESH_TOKEN_EXPIRY_MS
+        value: 604800000
       - key: DATABASE_URL
-        sync: false # You must provide this in the Render dashboard
+        sync: false
       - key: ACCESS_TOKEN_SECRET
-        sync: false # You must provide this in the Render dashboard
+        sync: false
       - key: REFRESH_TOKEN_SECRET
-        sync: false # You must provide this in the Render dashboard
+        sync: false
